@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Бесшовная карусель</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #f8fafc;
+    --header-bg: #18191c;
+    --card-bg: #ffffff;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --text-header-sub: #9ca3af;
+    --border-light: #e2e8f0;
+    --border-dashed: #cbd5e1;
+    --surface: #f1f5f9;
+    --icon-muted: #94a3b8;
+    --accent-dark: #18191c;
+    --accent-hover: #2d2f34;
+    --action-blue: #3b82f6;
+    --action-blue-hover: #2563eb;
+    --ok: #16a34a;
+    --danger: #ef4444; --danger-bg: #fee2e2; --danger-border: #fecaca; --danger-text: #991b1b;
+    --warn: #f59e0b;   --warn-bg: #fffbeb;   --warn-border: #fde68a;   --warn-text: #92400e;
+    --info-bg: #eff6ff; --info-border: #bfdbfe; --info-text: #1e40af;
+    --radius-lg: 16px; --radius-md: 10px; --radius-sm: 8px;
+
+    /* производные токены для переключения темы */
+    --field-bg: #ffffff;
+    --field-border: #e2e8f0;
+    --focus: #18191c;
+    --focus-ring: rgba(24,25,28,.08);
+    --on-accent: #ffffff;
+    --btn2-bg: #f1f5f9;
+    --btn2-hover: #e2e8f0;
+    --btn2-border: #e2e8f0;
+    --tab-track: #e2e8f0;
+    --tab-active: #18191c;
+    --dz-bg: #f8fafc;
+    --dz-hover: #f1f5f9;
+    --progress-fill: #18191c;
+    --card-shadow: 0 4px 20px rgba(0,0,0,.04);
+  }
+
+  body.theme-dark {
+    --bg-main: #101216;
+    --card-bg: #171A20;
+    --text-dark: #F1F5F9;
+    --text-muted: #9AA6B5;
+    --border-light: #303744;
+    --border-dashed: #465264;
+    --surface: #1B2028;
+    --icon-muted: #9AA6B5;
+    --accent-dark: #252B35;
+    --accent-hover: #2B3441;
+    --field-bg: #1B2028;
+    --field-border: #465264;
+    --focus: #9AA6B5;
+    --focus-ring: rgba(154,166,181,.18);
+    --btn2-bg: #20252E;
+    --btn2-hover: #2B3441;
+    --btn2-border: #303744;
+    --tab-track: #1B2028;
+    --tab-active: #252B35;
+    --dz-bg: #1B2028;
+    --dz-hover: #2B3441;
+    --progress-fill: #F1F5F9;
+    --card-shadow: 0 4px 20px rgba(0,0,0,.25);
+    --info-bg: #1B2028; --info-border: #3b82f6; --info-text: #F1F5F9;
+    --warn-bg: #1B2028; --warn-border: #f59e0b; --warn-text: #F1F5F9;
+    --danger-bg: #1B2028; --danger-border: #ef4444; --danger-text: #F1F5F9;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg-main);
+    color: var(--text-dark);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .2s ease, color .2s ease;
+  }
+
+  /* ---------- Шапка ---------- */
+  .header {
+    position: relative;
+    background: var(--header-bg);
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 56px 24px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  }
+  .header h1 {
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+  .header p {
+    margin: 6px auto 0;
+    max-width: 440px;
+    font-size: 0.9rem;
+    color: var(--text-header-sub);
+  }
+  .theme-btn {
+    position: absolute;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    right: 16px;
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border-radius: var(--radius-md);
+    border: 1px solid #303744;
+    background: transparent;
+    color: var(--text-header-sub);
+    cursor: pointer;
+    padding: 0;
+    transition: all .2s ease;
+  }
+  .theme-btn:hover { background: #2d2f34; color: #fff; }
+  .theme-btn .i-sun { display: none; }
+  body.theme-dark .theme-btn .i-sun { display: block; }
+  body.theme-dark .theme-btn .i-moon { display: none; }
+
+  /* ---------- Макет ---------- */
+  .container {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 20px 16px calc(32px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+    transition: all .2s ease;
+  }
+  .card.enter { animation: slideUp .3s ease both; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .icon { width: 1em; height: 1em; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .field-label {
+    display: block;
+    margin: 0 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+  }
+  .field + .field { margin-top: 18px; }
+
+  /* ---------- Dropzone ---------- */
+  .dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px;
+    min-height: 132px;
+    text-align: center;
+    background: var(--dz-bg);
+    border: 2px dashed var(--border-dashed);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .dropzone:hover, .dropzone.dragover, .dropzone:focus-within {
+    border-color: var(--focus);
+    background: var(--dz-hover);
+  }
+  .dropzone .dz-icon { font-size: 28px; color: var(--icon-muted); }
+  .dropzone .dz-title { font-size: 0.95rem; font-weight: 600; }
+  .dropzone .dz-sub { font-size: 0.82rem; color: var(--text-muted); }
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0; padding: 0; margin: -1px;
+  }
+
+  .file-row { display: none; align-items: center; gap: 14px; width: 100%; text-align: left; }
+  .file-row img {
+    width: 72px; height: 72px; object-fit: cover; flex: none;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+    background: var(--surface);
+  }
+  .file-meta { min-width: 0; flex: 1; }
+  .file-name { font-size: 0.95rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-dim { font-size: 0.82rem; color: var(--text-muted); }
+  .file-change { font-size: 0.82rem; font-weight: 600; color: var(--text-dark); display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .dropzone.has-file { padding: 16px; min-height: 0; }
+  .dropzone.has-file .empty-state { display: none; }
+  .dropzone.has-file .file-row { display: flex; }
+
+  /* ---------- Поля ---------- */
+  .stepper { display: flex; gap: 8px; }
+  .stepper input {
+    flex: 1; min-width: 0;
+    height: 46px;
+    padding: 0 14px;
+    text-align: center;
+    font: inherit; font-size: 16px; font-weight: 600;
+    color: var(--text-dark);
+    background: var(--field-bg);
+    border: 1px solid var(--field-border);
+    border-radius: var(--radius-md);
+    outline: none;
+    -moz-appearance: textfield;
+    transition: all .2s ease;
+  }
+  .stepper input::-webkit-outer-spin-button,
+  .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .stepper input:focus { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+
+  /* ---------- Кнопки ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 16px;
+    font: inherit; font-size: 0.95rem; font-weight: 600;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all .2s ease;
+    -webkit-appearance: none; appearance: none;
+  }
+  .btn:focus-visible, .tab:focus-visible, .theme-btn:focus-visible, .tile-dl:focus-visible {
+    outline: 2px solid var(--action-blue); outline-offset: 2px;
+  }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+  .btn-block { width: 100%; }
+  .btn-primary { background: var(--accent-dark); color: var(--on-accent); }
+  body.theme-dark .btn-primary { border-color: #465264; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+  .btn-action { background: var(--action-blue); color: #fff; }
+  .btn-action:hover:not(:disabled) { background: var(--action-blue-hover); }
+  .btn-secondary { background: var(--btn2-bg); color: var(--text-dark); border-color: var(--btn2-border); }
+  .btn-secondary:hover:not(:disabled) { background: var(--btn2-hover); }
+  .btn-step { width: 46px; height: 46px; padding: 0; flex: none; font-size: 16px; }
+
+  /* ---------- Вкладки ---------- */
+  .tabs {
+    display: flex; gap: 4px; padding: 4px;
+    background: var(--tab-track);
+    border-radius: var(--radius-md);
+  }
+  .tab {
+    flex: 1;
+    padding: 12px;
+    font: inherit; font-size: 0.9rem; font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .tab:hover:not(.active) { color: var(--text-dark); }
+  .tab.active { background: var(--tab-active); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+  .hint { margin: 8px 2px 0; font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ---------- Плашки ---------- */
+  .plate {
+    display: none;
+    align-items: flex-start; gap: 10px;
+    margin-top: 18px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    border: 1px solid;
+    border-radius: var(--radius-md);
+  }
+  .plate.show { display: flex; }
+  .plate .icon { margin-top: 2px; font-size: 16px; }
+  .plate.info   { background: var(--info-bg);   border-color: var(--info-border);   color: var(--info-text); }
+  .plate.warn   { background: var(--warn-bg);   border-color: var(--warn-border);   color: var(--warn-text); }
+  .plate.danger { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+
+  .card .btn-main { margin-top: 18px; }
+
+  /* ---------- Результат ---------- */
+  .result { display: none; }
+  .result.show { display: block; }
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 16px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 0.75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    color: #fff;
+    background: var(--accent-dark);
+    border-radius: 6px;
+  }
+  body.theme-dark .badge { border: 1px solid #465264; }
+
+  .strip {
+    margin: 14px -16px 0;
+    padding: 0 16px 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  .strip-track { display: flex; gap: 2px; width: max-content; }
+  .tile {
+    position: relative;
+    flex: none;
+    scroll-snap-align: start;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+  }
+  .tile img { display: block; height: 176px; width: auto; max-width: none; user-select: none; -webkit-user-drag: none; }
+  .tile-num {
+    position: absolute; left: 6px; top: 6px;
+    min-width: 22px; padding: 2px 6px;
+    font-size: 0.75rem; font-weight: 700; text-align: center;
+    color: #fff; background: #111; opacity: .85;
+    border-radius: 6px;
+  }
+  .tile-dl {
+    position: absolute; right: 6px; bottom: 6px;
+    width: 36px; height: 36px; padding: 0;
+    display: grid; place-items: center;
+    font-size: 15px;
+    color: #fff; background: #111; opacity: .85;
+    border: 0; border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .tile-dl:hover { opacity: 1; background: #2d2f34; }
+  .tile-cap { padding: 6px 8px; font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .actions .btn { flex: 1 1 200px; }
+
+  .progress { display: none; margin-top: 14px; height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; }
+  .progress.show { display: block; }
+  .progress > i { display: block; height: 100%; width: 0; background: var(--progress-fill); transition: width .2s ease; }
+
+  /* ---------- Кадрирование: строка кнопок ---------- */
+  .crop-row { display: none; gap: 10px; margin-top: 12px; }
+  .crop-row.show { display: flex; }
+  .crop-row .btn { flex: 1; }
+
+  .result-hint { margin-left: 10px; font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ---------- Плитки: открытие и копирование ---------- */
+  .tile-num { pointer-events: none; }
+  .tile-open {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    padding: 0; border: 0; background: transparent;
+    border-radius: var(--radius-sm);
+    cursor: zoom-in;
+    transition: all .2s ease;
+  }
+  .tile-open:hover { background: rgba(0,0,0,.12); }
+  .tile-copy {
+    position: absolute; right: 6px; bottom: 48px;
+    width: 36px; height: 36px; padding: 0;
+    display: none; place-items: center;
+    font-size: 15px;
+    color: #fff; background: #111; opacity: .85;
+    border: 0; border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .tile-copy:hover { opacity: 1; background: #2d2f34; }
+  @media (hover: hover) and (pointer: fine) {
+    body.can-copy .tile-copy { display: grid; }
+  }
+
+  /* ---------- Модальные окна ---------- */
+  body.modal-open { overflow: hidden; }
+  .modal-back {
+    position: fixed; inset: 0; z-index: 40;
+    display: none; align-items: center; justify-content: center;
+    padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    background: rgba(0,0,0,.5);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  }
+  .modal-back.open { display: flex; animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    width: 100%; max-width: 560px; max-height: 100%;
+    overflow-y: auto; overscroll-behavior: contain;
+    padding: 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    animation: modalIn .2s ease;
+  }
+  .modal-wide { max-width: 720px; }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(8px) scale(.98); }
+    to   { opacity: 1; transform: none; }
+  }
+  .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .modal-head h2 {
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;
+  }
+  .modal-head p { margin: 2px 0 0; font-size: 0.82rem; color: var(--text-muted); }
+  .icon-btn {
+    width: 40px; height: 40px; flex: none;
+    display: grid; place-items: center; padding: 0;
+    font-size: 18px;
+    color: var(--text-dark); background: var(--btn2-bg);
+    border: 1px solid var(--btn2-border); border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .icon-btn:hover:not(:disabled) { background: var(--btn2-hover); }
+  .modal .actions { margin-top: 16px; }
+
+  /* Предпросмотр слайда */
+  .pv-stage {
+    position: relative;
+    height: min(58vh, 520px);
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    touch-action: pan-y;
+  }
+  .pv-stage img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+  .pv-nav {
+    position: absolute; top: 50%;
+    width: 40px; height: 40px; margin-top: -20px;
+    display: grid; place-items: center; padding: 0;
+    font-size: 18px;
+    color: var(--text-dark); background: var(--card-bg);
+    border: 1px solid var(--border-light); border-radius: var(--radius-md);
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .pv-nav:hover:not(:disabled) { background: var(--btn2-hover); }
+  .pv-nav:disabled { opacity: .5; cursor: not-allowed; }
+  .pv-nav.prev { left: 8px; }
+  .pv-nav.next { right: 8px; }
+
+  /* Кадрирование */
+  .crop-stage {
+    display: flex; justify-content: center; align-items: center;
+    min-height: 120px; padding: 18px; overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+  }
+  .crop-wrap { position: relative; line-height: 0; user-select: none; -webkit-user-select: none; }
+  .crop-wrap img { display: block; pointer-events: none; -webkit-user-drag: none; }
+  .crop-dim { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .crop-hole { position: absolute; box-shadow: 0 0 0 9999px rgba(0,0,0,.55); }
+  .crop-box {
+    position: absolute;
+    outline: 2px solid #fff;
+    cursor: move;
+    touch-action: none;
+  }
+  .crop-split { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed rgba(255,255,255,.9); pointer-events: none; }
+  .crop-h { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; }
+  .crop-h::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 14px; height: 14px; margin: -7px 0 0 -7px;
+    background: #fff; border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  }
+  .crop-h[data-h="nw"] { left: 0;    top: 0;    cursor: nwse-resize; }
+  .crop-h[data-h="n"]  { left: 50%;  top: 0;    cursor: ns-resize; }
+  .crop-h[data-h="ne"] { left: 100%; top: 0;    cursor: nesw-resize; }
+  .crop-h[data-h="e"]  { left: 100%; top: 50%;  cursor: ew-resize; }
+  .crop-h[data-h="se"] { left: 100%; top: 100%; cursor: nwse-resize; }
+  .crop-h[data-h="s"]  { left: 50%;  top: 100%; cursor: ns-resize; }
+  .crop-h[data-h="sw"] { left: 0;    top: 100%; cursor: nesw-resize; }
+  .crop-h[data-h="w"]  { left: 0;    top: 50%;  cursor: ew-resize; }
+  .crop-box.locked .crop-h[data-h="n"],
+  .crop-box.locked .crop-h[data-h="e"],
+  .crop-box.locked .crop-h[data-h="s"],
+  .crop-box.locked .crop-h[data-h="w"] { display: none; }
+  .crop-info { margin: 10px 2px 16px; font-size: 0.82rem; color: var(--text-muted); }
+  .tabs-sm .tab { padding: 12px 6px; font-size: 0.88rem; }
+  .stepper-val {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    height: 46px; font-size: 16px; font-weight: 600;
+    background: var(--field-bg); border: 1px solid var(--field-border); border-radius: var(--radius-md);
+  }
+
+  .tile-open:focus-visible, .tile-copy:focus-visible, .icon-btn:focus-visible, .pv-nav:focus-visible {
+    outline: 2px solid var(--action-blue); outline-offset: 2px;
+  }
+  @media (max-width: 600px) {
+    .modal { padding: 20px; }
+  }
+
+  /* ---------- Тост ---------- */
+  .toast {
+    position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    z-index: 50;
+    max-width: calc(100% - 32px);
+    padding: 11px 16px;
+    font-size: 0.9rem;
+    color: #fff; background: #111;
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    opacity: 0; transform: translate(-50%, 10px);
+    pointer-events: none;
+    transition: all .2s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- Скроллбар ---------- */
+  .strip::-webkit-scrollbar { height: 6px; }
+  .strip::-webkit-scrollbar-thumb { background: var(--border-dashed); border-radius: 3px; }
+  .strip { scrollbar-width: thin; scrollbar-color: var(--border-dashed) transparent; }
+
+  @media (min-width: 600px) {
+    .container { padding-top: 24px; gap: 20px; }
+    .tile img { height: 200px; }
+  }
+  @media (max-width: 380px) {
+    .header h1 { font-size: 1.3rem; }
+    .card { padding: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+
+  /* ---------- v2: добавления ---------- */
+  .modal { --mp: 24px; padding: var(--mp); }
+  .modal-head.sticky { position: sticky; top: 0; z-index: 3; margin: calc(var(--mp) * -1) calc(var(--mp) * -1) 14px; padding: var(--mp) var(--mp) 12px; background: var(--card-bg); border-bottom: 1px solid var(--border-light); }
+  .head-act { display: flex; gap: 8px; align-items: center; }
+  .btn-sm { padding: 9px 14px; font-size: .88rem; }
+  .range { width: 100%; height: 28px; accent-color: var(--action-blue); margin: 0; }
+  .tabs-4 .tab { padding: 12px 2px; font-size: .8rem; }
+  .check { display: flex; gap: 10px; align-items: center; margin-top: 14px; font-size: .88rem; cursor: pointer; }
+  .check input { width: 18px; height: 18px; accent-color: var(--action-blue); }
+  .plate span { white-space: pre-line; }
+  .hide-touch { }
+  @media (hover: none) { .hide-touch { display: none; } }
+
+  .drag-ov { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; pointer-events: none;
+    background: rgba(24,25,28,.78); color: #fff; font-weight: 600; font-size: 1.1rem; }
+  .drag-ov.show { display: grid; }
+  .drag-ov span { padding: 28px 36px; border: 3px dashed #fff; border-radius: var(--radius-lg); }
+
+  /* кадрирование: зум, инструменты, числа */
+  .crop-stage { display: flex; height: min(46vh, 440px); overflow: auto; padding: 18px; touch-action: pan-x pan-y; overscroll-behavior: contain; }
+  .crop-wrap { flex: none; margin: auto; }
+  .crop-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+  .crop-tools .sp { flex: 1; }
+  .zoom-lbl { min-width: 48px; text-align: center; font-size: .82rem; font-weight: 600; color: var(--text-muted); }
+  .num-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+  .num-row label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); }
+  .num-row input { width: 100%; height: 42px; margin-top: 4px; padding: 0 6px; text-align: center; font: inherit; font-size: 16px; font-weight: 600;
+    color: var(--text-dark); background: var(--field-bg); border: 1px solid var(--field-border); border-radius: var(--radius-md); outline: none; -moz-appearance: textfield; }
+  .num-row input:focus { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+  .num-row input:disabled { opacity: .55; }
+
+  @media (min-width: 900px) { .container { max-width: 720px; } .modal-crop { max-width: 680px; } }
+  @media (max-width: 600px) {
+    .modal-back { align-items: flex-end; padding: calc(12px + env(safe-area-inset-top, 0px)) 0 0; }
+    .modal { --mp: 16px; max-height: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: var(--mp) var(--mp) calc(20px + env(safe-area-inset-bottom, 0px)); animation: sheetIn .25s ease; }
+    .modal-head.sticky { margin-bottom: 12px; }
+  }
+  @keyframes sheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ---------- Предпросмотр «как в ленте» ---------- */
+  .feed-modal { max-width: 780px; --fc: 290px; --ar: .8; --arn: .8; --sw: 100%; }
+  .feed-body { display: flex; gap: 28px; align-items: flex-start; justify-content: center; }
+  .feed-col { flex: none; width: min(380px, max(200px, calc((100vh - var(--fc)) * var(--arn)))); }
+  .feed-side { flex: 1; min-width: 0; max-width: 280px; padding-top: 2px; }
+  .feed-side .field + .field { margin-top: 16px; }
+  .feed-card { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 14px; overflow: hidden; }
+  .feed-top { display: flex; align-items: center; gap: 10px; padding: 9px 12px; font-size: .85rem; }
+  .feed-av { width: 28px; height: 28px; flex: none; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6); }
+  .feed-stage { position: relative; background: var(--surface); }
+  .feed-vp { overflow: hidden; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+  .feed-vp.grab { cursor: grabbing; }
+  .feed-track { display: flex; width: 100%; will-change: transform; }
+  .fslide { flex: none; width: var(--sw); aspect-ratio: var(--ar); }
+  .fslide img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
+  .feed-arrow { position: absolute; top: 50%; width: 32px; height: 32px; margin-top: -16px; padding: 0; display: none; place-items: center;
+    color: #111; background: rgba(255,255,255,.92); border: 0; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,.25); cursor: pointer; transition: opacity .2s ease; }
+  .feed-arrow.prev { left: 8px; } .feed-arrow.next { right: 8px; }
+  .feed-arrow:disabled { opacity: 0; pointer-events: none; }
+  @media (hover: hover) and (pointer: fine) { .feed-arrow { display: grid; } }
+  .feed-bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 8px 12px; }
+  .feed-ic { display: flex; gap: 12px; color: var(--text-dark); }
+  .feed-ic.r { justify-content: flex-end; }
+  .feed-dots { display: flex; justify-content: center; }
+  .feed-dots button { width: 14px; height: 24px; padding: 0; display: grid; place-items: center; background: transparent; border: 0; cursor: pointer; }
+  .feed-dots button::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--border-dashed); transition: all .2s ease; }
+  .feed-dots button.on::before { background: var(--action-blue); }
+  .feed-cap { display: flex; flex-direction: column; gap: 6px; padding: 2px 12px 14px; }
+  .feed-cap i { height: 8px; border-radius: 4px; background: var(--surface); }
+  .feed-cap i:last-child { width: 55%; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { min-height: 40px; padding: 0 14px; font: inherit; font-size: .85rem; font-weight: 600; color: var(--text-dark); background: var(--btn2-bg);
+    border: 1px solid var(--btn2-border); border-radius: 999px; cursor: pointer; transition: all .2s ease; }
+  .chip:hover { background: var(--btn2-hover); }
+  .chip[aria-pressed="true"] { background: var(--accent-dark); color: var(--on-accent); border-color: var(--accent-dark); }
+  .chip:focus-visible, .feed-arrow:focus-visible, .feed-dots button:focus-visible { outline: 2px solid var(--action-blue); outline-offset: 2px; }
+  .feed-note { margin: 16px 0 0; font-size: .85rem; color: var(--text-muted); }
+  @supports (height: 100dvh) { .feed-col { width: min(380px, max(200px, calc((100dvh - var(--fc)) * var(--arn)))); } }
+  @media (max-width: 600px) {
+    .feed-modal { --fc: 352px; height: 100%; }
+    .feed-body { flex-direction: column; align-items: center; gap: 12px; }
+    .feed-col { width: min(100%, max(180px, calc((100vh - var(--fc)) * var(--arn)))); }
+    .feed-side { width: 100%; max-width: none; }
+    .feed-side .field-label, .feed-cap { display: none; }
+    .feed-side .field + .field { margin-top: 10px; }
+    .feed-note { margin-top: 10px; font-size: .8rem; }
+  }
+  @supports (height: 100dvh) { @media (max-width: 600px) { .feed-col { width: min(100%, max(180px, calc((100dvh - var(--fc)) * var(--arn)))); } } }
+
+  /* ---------- Кадрирование v3 ---------- */
+  .plate { flex-wrap: nowrap; }
+  .plate-body { flex: 1; min-width: 0; }
+  .plate-act { display: inline-flex; align-items: center; margin-top: 8px; min-height: 36px; }
+  .plate-act[hidden] { display: none; }
+  .modal-crop { max-width: 980px; }
+  .crop-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+  .crop-main { min-width: 0; }
+  .crop-stage { height: min(64vh, 580px); }
+  .crop-info { margin: 10px 2px 0; }
+  .crop-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .crop-side .field + .field { margin-top: 0; }
+  .crop-side .crop-tools { margin: 0; }
+  .crop-side .num-row { margin: 10px 0 0; }
+  .crop-count-row { display: flex; gap: 8px; }
+  .crop-count-row .stepper { flex: 1; min-width: 0; }
+  .num-det summary { cursor: pointer; padding: 4px 0; font-size: .85rem; font-weight: 600; color: var(--text-muted); }
+  @media (max-width: 860px) {
+    .crop-body { grid-template-columns: 1fr; }
+    .crop-stage { height: min(46vh, 420px); }
+  }
+  @media (max-width: 600px) {
+    .modal-crop { height: 100%; display: flex; flex-direction: column; }
+    .modal-crop .crop-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+    .modal-crop .crop-main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .modal-crop .crop-stage { flex: 1; height: auto; min-height: 160px; padding: 10px; }
+    .crop-info { margin: 6px 2px 0; font-size: .78rem; }
+    .crop-side { gap: 8px; flex: none; }
+    .crop-side .field-label, .crop-side .hint, .desk-only { display: none; }
+    .crop-side .tab { padding: 10px 4px; }
+    .crop-side .btn-step, .crop-side .icon-btn, .crop-side .stepper-val { height: 40px; }
+    .crop-side .btn-step, .crop-side .icon-btn { width: 40px; }
+    .crop-tools { flex-wrap: nowrap; gap: 6px; }
+    .crop-tools .icon-btn { width: 38px; height: 38px; }
+    .zoom-lbl { min-width: 40px; }
+  }
+
+  /* ---------- v4: адаптация под телефон и ПК ---------- */
+  button, .tab, .chip, summary { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .tab:focus-visible, .btn:focus-visible, summary:focus-visible { outline: 2px solid var(--action-blue); outline-offset: 2px; }
+  @media (min-width: 601px) {
+    .modal-back { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  }
+  @media (pointer: coarse) { .icon-btn { width: 44px; height: 44px; } .tabs .tab, .chip { min-height: 44px; } }
+  @supports (height: 100dvh) { .pv-stage { height: min(58dvh, 520px); } }
+
+  /* Окно кадрирования: шапка вне прокрутки, поле растягивается по высоте окна */
+  .modal-crop { --mp: 20px; display: flex; flex-direction: column; max-width: 1040px; height: min(100%, 860px); padding: 0; overflow: hidden; }
+  .modal-crop .modal-head.sticky { position: static; flex: none; margin: 0; padding: var(--mp) var(--mp) 12px; }
+  .modal-crop .crop-body { flex: 1; min-height: 0; padding: 16px var(--mp) var(--mp); grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+  .modal-crop .crop-main { display: flex; flex-direction: column; min-height: 0; }
+  .modal-crop .crop-stage { flex: 1; height: auto; min-height: 200px; }
+  .modal-crop .crop-side { min-height: 0; gap: 12px; overflow-y: auto; overscroll-behavior: contain; padding: 4px 8px 4px 4px; margin: -4px -8px -4px -4px; }
+  @media (max-height: 520px) {
+    .modal-crop { --mp: 14px; }
+    .modal-crop .modal-head.sticky { padding-bottom: 8px; }
+    .modal-crop .modal-head p { display: none; }
+    .modal-crop .crop-body { padding-top: 10px; }
+  }
+  @media (min-width: 601px) and (max-width: 760px) {
+    .modal-crop .crop-body { display: block; overflow-y: auto; overscroll-behavior: contain; }
+    .modal-crop .crop-main { display: block; }
+    .modal-crop .crop-stage { height: min(44vh, 420px); }
+    .modal-crop .crop-side { overflow: visible; margin: 14px 0 0; padding: 0; }
+  }
+  @media (max-width: 600px) {
+    .modal-crop { --mp: 14px; height: 100%; }
+    .modal-crop .modal-head p { display: none; }
+    .modal-crop .crop-body { padding-top: 8px; padding-bottom: calc(var(--mp) + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; }
+    .modal-crop .crop-main { min-height: 200px; }
+    .modal-crop .crop-stage { min-height: 150px; }
+    .modal-crop .crop-side { overflow: visible; margin: 0; padding: 0; }
+  }
+
+  /* Размер слайдов: на телефоне сетка 2×2 вместо сплюснутой полосы */
+  .tabs-4 .tab small { display: none; }
+  @media (max-width: 600px) {
+    .tabs-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0; background: none; }
+    .tabs-4 .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 58px; padding: 10px 8px; font-size: .95rem; white-space: nowrap; background: var(--tab-track); }
+    .tabs-4 .tab small { display: block; font-size: .75rem; font-weight: 500; opacity: .75; }
+    .tabs-4 .tab.active { background: var(--tab-active); }
+  }
+</style>
+</head>
+<body>
+<script>
+  // Применяем тему до отрисовки, чтобы не было вспышки
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('carousel-theme'); } catch (e) {}
+    var dark = t ? t === 'dark' : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) document.body.classList.add('theme-dark');
+  })();
+</script>
+
+<!-- Иконки -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+  <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88"/><path d="M14.47 14.48L20 20"/><path d="M8.12 8.12L12 12"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M17 3l4 4-4 4"/><path d="M3 7h18"/><path d="M7 21l-4-4 4-4"/><path d="M21 17H3"/></symbol>
+  <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></symbol>
+  <symbol id="i-rotl" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-rotr" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-fliph" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-5 5 5 5V7z"/><path d="M16 7l5 5-5 5V7z"/></symbol>
+  <symbol id="i-flipv" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M7 8l5-5 5 5H7z"/><path d="M7 16l5 5 5-5H7z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></symbol>
+  <symbol id="i-comment" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+</svg>
+
+<header class="header">
+  <button class="theme-btn" id="themeBtn" type="button" aria-label="Переключить тему">
+    <svg class="icon i-moon" width="18" height="18"><use href="#i-moon"/></svg>
+    <svg class="icon i-sun" width="18" height="18"><use href="#i-sun"/></svg>
+  </button>
+  <h1>Бесшовная карусель</h1>
+  <p>Разрежьте одну картинку на слайды для Instagram, VK и других сетей</p>
+</header>
+
+<main class="container">
+
+  <!-- Загрузка -->
+  <section class="card" aria-label="Изображение">
+    <label class="dropzone" id="dropZone" for="fileInput">
+      <div class="empty-state" style="display:contents">
+        <svg class="icon dz-icon" width="28" height="28"><use href="#i-upload"/></svg>
+        <span class="dz-title">Выберите или перетащите изображение</span>
+        <span class="dz-sub">JPG, PNG, WebP, HEIC<span class="hide-touch"> · или вставьте Ctrl+V</span></span>
+      </div>
+      <div class="file-row">
+        <img id="thumb" alt="">
+        <div class="file-meta">
+          <div class="file-name" id="fileName"></div>
+          <div class="file-dim" id="fileDim"></div>
+          <span class="file-change">
+            <svg class="icon" width="14" height="14"><use href="#i-swap"/></svg>
+            Заменить
+          </span>
+        </div>
+      </div>
+    </label>
+    <input class="visually-hidden" type="file" id="fileInput" accept="image/*,.heic,.heif">
+    <div class="plate danger" id="loadPlate" role="alert"><svg class="icon" width="16" height="16"><use href="#i-warn"/></svg><span id="loadText"></span></div>
+    <div class="crop-row" id="cropRow">
+      <button class="btn btn-secondary" id="cropBtn" type="button">
+        <svg class="icon" width="16" height="16"><use href="#i-crop"/></svg>
+        Кадрировать
+      </button>
+      <button class="btn btn-secondary" id="cropResetBtn" type="button" style="display:none">
+        <svg class="icon" width="16" height="16"><use href="#i-undo"/></svg>
+        Сбросить кадр
+      </button>
+    </div>
+  </section>
+
+
+  <!-- Настройки -->
+  <section class="card" aria-label="Настройки">
+    <div class="field">
+      <label class="field-label" for="slideCount">Количество слайдов</label>
+      <div class="stepper">
+        <button class="btn btn-secondary btn-step" id="minusBtn" type="button" aria-label="Меньше">
+          <svg class="icon" width="16" height="16"><use href="#i-minus"/></svg>
+        </button>
+        <input type="number" id="slideCount" value="3" min="2" max="10" inputmode="numeric">
+        <button class="btn btn-secondary btn-step" id="plusBtn" type="button" aria-label="Больше">
+          <svg class="icon" width="16" height="16"><use href="#i-plus"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label" id="fmtLabel">Формат файлов</span>
+      <div class="tabs" role="radiogroup" aria-labelledby="fmtLabel">
+        <button class="tab active" type="button" role="radio" aria-checked="true" data-format="image/jpeg">JPEG</button>
+        <button class="tab" type="button" role="radio" aria-checked="false" data-format="image/png">PNG</button>
+      </div>
+      <p class="hint" id="fmtHint">Максимальное качество</p>
+    </div>
+
+    <div class="field">
+      <span class="field-label" id="szLabel">Размер слайдов</span>
+      <div class="tabs tabs-sm tabs-4" role="radiogroup" aria-labelledby="szLabel">
+        <button class="tab active" type="button" role="radio" aria-checked="true" data-preset="orig">Как в фото<small>без изменений</small></button>
+        <button class="tab" type="button" role="radio" aria-checked="false" data-preset="1080x1350">1080×1350<small>4:5</small></button>
+        <button class="tab" type="button" role="radio" aria-checked="false" data-preset="1080x1080">1080×1080<small>1:1</small></button>
+        <button class="tab" type="button" role="radio" aria-checked="false" data-preset="1080x1440">1080×1440<small>3:4</small></button>
+      </div>
+      <p class="hint" id="szHint">Без изменения размера, как в фото</p>
+    </div>
+
+    <div class="plate info" id="sizePlate" role="status">
+      <svg class="icon" width="16" height="16"><use href="#i-info"/></svg>
+      <div class="plate-body"><span id="sizeText"></span><button class="chip plate-act" id="plateCrop" type="button" hidden></button></div>
+    </div>
+
+  </section>
+
+
+
+  <!-- Результат -->
+  <section class="card result" id="result" aria-label="Результат">
+    <div class="result-box">
+      <span class="badge" id="badge">3 слайда</span><span class="result-hint">Нажмите на слайд, чтобы посмотреть</span>
+      <div class="strip" id="strip"><div class="strip-track" id="track"></div></div>
+      <div class="progress" id="progress"><i id="progressBar"></i></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="feedBtn" type="button">
+          <svg class="icon" width="16" height="16"><use href="#i-phone"/></svg>
+          Как в ленте
+        </button>
+        <button class="btn btn-action" id="zipBtn" type="button">
+          <svg class="icon" width="16" height="16"><use href="#i-download"/></svg>
+          <span id="zipLabel">Скачать ZIP</span>
+        </button>
+        <button class="btn btn-secondary" id="shareBtn" type="button" style="display:none">
+          <svg class="icon" width="16" height="16"><use href="#i-share"/></svg>
+          Поделиться / в галерею
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Кадрирование -->
+<div class="modal-back" id="cropModal">
+  <div class="modal modal-crop" role="dialog" aria-modal="true" aria-labelledby="cropTitle">
+    <div class="modal-head sticky">
+      <div>
+        <h2 id="cropTitle">Кадрирование</h2>
+        <p>Выберите часть фото, которая попадёт в карусель</p>
+      </div>
+      <div class="head-act">
+        <button class="btn btn-primary btn-sm" id="cropApply2" type="button">Готово</button>
+        <button class="icon-btn" id="cropClose" type="button" aria-label="Закрыть">
+          <svg class="icon" width="18" height="18"><use href="#i-x"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="crop-body">
+      <div class="crop-main">
+        <div class="crop-stage" id="cropStage">
+          <div class="crop-wrap" id="cropWrap">
+            <img id="cropImg" alt="" draggable="false">
+            <div class="crop-dim"><div class="crop-hole" id="cropHole"></div></div>
+            <div class="crop-box" id="cropBox">
+              <span class="crop-h" data-h="nw"></span><span class="crop-h" data-h="n"></span>
+              <span class="crop-h" data-h="ne"></span><span class="crop-h" data-h="e"></span>
+              <span class="crop-h" data-h="se"></span><span class="crop-h" data-h="s"></span>
+              <span class="crop-h" data-h="sw"></span><span class="crop-h" data-h="w"></span>
+            </div>
+          </div>
+        </div>
+        <p class="crop-info" id="cropInfo"></p>
+      </div>
+
+      <div class="crop-side">
+        <div class="field">
+          <span class="field-label" id="ratioLabel">Формат одного слайда</span>
+          <div class="tabs tabs-sm" role="radiogroup" aria-labelledby="ratioLabel">
+            <button class="tab active" type="button" role="radio" aria-checked="true" data-ratio="free">Свободно</button>
+            <button class="tab" type="button" role="radio" aria-checked="false" data-ratio="4:5">4:5</button>
+            <button class="tab" type="button" role="radio" aria-checked="false" data-ratio="1:1">1:1</button>
+            <button class="tab" type="button" role="radio" aria-checked="false" data-ratio="3:4">3:4</button>
+          </div>
+          <p class="hint" id="cropHint"></p>
+        </div>
+
+        <div class="crop-tools">
+          <button class="icon-btn" data-tf="ccw" type="button" title="Повернуть влево" aria-label="Повернуть влево"><svg class="icon" width="18" height="18"><use href="#i-rotl"/></svg></button>
+          <button class="icon-btn" data-tf="cw" type="button" title="Повернуть вправо" aria-label="Повернуть вправо"><svg class="icon" width="18" height="18"><use href="#i-rotr"/></svg></button>
+          <button class="icon-btn" data-tf="fh" type="button" title="Отразить по горизонтали" aria-label="Отразить по горизонтали"><svg class="icon" width="18" height="18"><use href="#i-fliph"/></svg></button>
+          <button class="icon-btn" data-tf="fv" type="button" title="Отразить по вертикали" aria-label="Отразить по вертикали"><svg class="icon" width="18" height="18"><use href="#i-flipv"/></svg></button>
+          <span class="sp"></span>
+          <button class="icon-btn" id="zoomOut" type="button" aria-label="Уменьшить"><svg class="icon" width="18" height="18"><use href="#i-minus"/></svg></button>
+          <span class="zoom-lbl" id="zoomLbl">100%</span>
+          <button class="icon-btn" id="zoomIn" type="button" aria-label="Увеличить"><svg class="icon" width="18" height="18"><use href="#i-plus"/></svg></button>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Количество слайдов</span>
+          <div class="crop-count-row">
+            <div class="stepper">
+              <button class="btn btn-secondary btn-step" id="cropMinus" type="button" aria-label="Меньше"><svg class="icon" width="16" height="16"><use href="#i-minus"/></svg></button>
+              <div class="stepper-val" id="cropCount">3</div>
+              <button class="btn btn-secondary btn-step" id="cropPlus" type="button" aria-label="Больше"><svg class="icon" width="16" height="16"><use href="#i-plus"/></svg></button>
+            </div>
+            <button class="icon-btn" id="cropResetAll" type="button" title="Сбросить кадр" aria-label="Сбросить кадр"><svg class="icon" width="18" height="18"><use href="#i-undo"/></svg></button>
+          </div>
+        </div>
+
+        <details class="num-det" id="numDet">
+          <summary>Точные значения, px</summary>
+          <div class="num-row">
+            <label>X<input id="nX" type="number" inputmode="numeric"></label>
+            <label>Y<input id="nY" type="number" inputmode="numeric"></label>
+            <label>Ширина<input id="nW" type="number" inputmode="numeric"></label>
+            <label>Высота<input id="nH" type="number" inputmode="numeric"></label>
+          </div>
+        </details>
+
+        <button class="btn btn-primary btn-block desk-only" id="cropApply" type="button">
+          <svg class="icon" width="16" height="16"><use href="#i-check"/></svg>
+          Применить
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Как в ленте -->
+<div class="modal-back" id="feedModal">
+  <div class="modal feed-modal" role="dialog" aria-modal="true" aria-labelledby="feedTitle">
+    <div class="modal-head">
+      <div><h2 id="feedTitle">Как в ленте</h2><p>Листайте и проверьте, как сходятся слайды</p></div>
+      <button class="icon-btn" id="feedClose" type="button" aria-label="Закрыть"><svg class="icon" width="18" height="18"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="feed-body">
+      <div class="feed-col">
+        <div class="feed-card">
+          <div class="feed-top"><i class="feed-av"></i><b>your_account</b></div>
+          <div class="feed-stage">
+            <div class="feed-vp" id="feedVp"><div class="feed-track" id="feedTrack"></div></div>
+            <button class="feed-arrow prev" id="fPrev" type="button" aria-label="Назад"><svg class="icon" width="16" height="16"><use href="#i-left"/></svg></button>
+            <button class="feed-arrow next" id="fNext" type="button" aria-label="Вперёд"><svg class="icon" width="16" height="16"><use href="#i-right"/></svg></button>
+          </div>
+          <div class="feed-bar">
+            <div class="feed-ic">
+              <svg class="icon" width="22" height="22"><use href="#i-heart"/></svg>
+              <svg class="icon" width="22" height="22"><use href="#i-comment"/></svg>
+              <svg class="icon" width="22" height="22"><use href="#i-send"/></svg>
+            </div>
+            <div class="feed-dots" id="feedDots"></div>
+            <div class="feed-ic r"><svg class="icon" width="22" height="22"><use href="#i-bookmark"/></svg></div>
+          </div>
+          <div class="feed-cap"><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="feed-side">
+        <div class="field">
+          <span class="field-label" id="frLabel">Рамка</span>
+          <div class="tabs tabs-sm" role="radiogroup" aria-labelledby="frLabel">
+            <button class="tab active" type="button" role="radio" aria-checked="true" data-far="auto">Авто</button>
+            <button class="tab" type="button" role="radio" aria-checked="false" data-far="0.8">4:5</button>
+            <button class="tab" type="button" role="radio" aria-checked="false" data-far="1">1:1</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Перейти к стыку</span>
+          <div class="chips"><span id="seamChips" style="display:contents"></span><button class="chip" id="feedPeek" type="button" aria-pressed="false">Край следующего</button></div>
+        </div>
+        <p class="feed-note" id="feedNote"></p>
+        <p class="hint hide-touch">Тяните слайд мышью или листайте стрелками ← →</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="drag-ov" id="dragOv"><span>Отпустите, чтобы загрузить фото</span></div>
+
+<!-- Предпросмотр слайда -->
+<div class="modal-back" id="pvModal">
+  <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="pvTitle">
+    <div class="modal-head">
+      <div>
+        <h2 id="pvTitle">Слайд</h2>
+        <p id="pvMeta"></p>
+      </div>
+      <button class="icon-btn" id="pvClose" type="button" aria-label="Закрыть">
+        <svg class="icon" width="18" height="18"><use href="#i-x"/></svg>
+      </button>
+    </div>
+    <div class="pv-stage" id="pvStage">
+      <img id="pvImg" alt="" draggable="false">
+      <button class="pv-nav prev" id="pvPrev" type="button" aria-label="Предыдущий слайд">
+        <svg class="icon" width="18" height="18"><use href="#i-left"/></svg>
+      </button>
+      <button class="pv-nav next" id="pvNext" type="button" aria-label="Следующий слайд">
+        <svg class="icon" width="18" height="18"><use href="#i-right"/></svg>
+      </button>
+    </div>
+    <div class="actions">
+      <button class="btn btn-action" id="pvCopy" type="button">
+        <svg class="icon" width="16" height="16"><use href="#i-copy"/></svg>
+        Копировать
+      </button>
+      <button class="btn btn-secondary" id="pvDownload" type="button">
+        <svg class="icon" width="16" height="16"><use href="#i-download"/></svg>
+        Скачать
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+
+  var fileInput = $('fileInput'), dropZone = $('dropZone');
+  var thumb = $('thumb'), fileName = $('fileName'), fileDim = $('fileDim');
+  var slideCount = $('slideCount'), minusBtn = $('minusBtn'), plusBtn = $('plusBtn');
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-format]'));
+  var fmtHint = $('fmtHint');
+  var sizePlate = $('sizePlate'), sizeText = $('sizeText');
+  var result = $('result'), badge = $('badge'), track = $('track');
+  var zipBtn = $('zipBtn'), zipLabel = $('zipLabel'), shareBtn = $('shareBtn');
+  var progress = $('progress'), progressBar = $('progressBar');
+  var toastEl = $('toast'), themeBtn = $('themeBtn');
+
+  var MIN = 2, MAX = 10;
+  var state = {
+    preset: 'orig', orig: null, img: null, W: 0, H: 0, crop: null, srcUrl: null, baseName: 'carousel',
+    format: 'image/jpeg', slices: [], run: 0, busy: false
+  };
+
+  /* ---------- Утилиты ---------- */
+  var toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2600);
+  }
+
+  function plural(n, one, few, many) {
+    var m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+
+  function clampCount(v) {
+    v = parseInt(v, 10);
+    if (isNaN(v)) v = 3;
+    return Math.min(MAX, Math.max(MIN, v));
+  }
+
+  function extFor(fmt) { return fmt === 'image/png' ? 'png' : 'jpg'; }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  var RATIOS = [
+    [1, '1:1'], [0.8, '4:5'], [0.75, '3:4'], [0.5625, '9:16'],
+    [1.7778, '16:9'], [1.5, '3:2'], [0.6667, '2:3'], [1.3333, '4:3'], [1.91, '1.91:1']
+  ];
+  function ratioName(r) {
+    for (var i = 0; i < RATIOS.length; i++) {
+      if (Math.abs(r - RATIOS[i][0]) / RATIOS[i][0] < 0.01) return RATIOS[i][1];
+    }
+    return null;
+  }
+
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  /* ---------- Тема ---------- */
+  themeBtn.addEventListener('click', function () {
+    var dark = document.body.classList.toggle('theme-dark');
+    try { localStorage.setItem('carousel-theme', dark ? 'dark' : 'light'); } catch (e) {}
+  });
+
+  /* ---------- Загрузка файла ---------- */
+  var loadPlate = $('loadPlate'), loadText = $('loadText');
+  function loadErr(msg) { loadText.textContent = msg; loadPlate.classList.add('show'); }
+  function isHeic(f) { return /hei[cf]$/i.test(f.name || '') || /image\/hei[cf]/i.test(f.type || ''); }
+  function loadScript(u) {
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script'); s.src = u; s.onload = res; s.onerror = rej; document.head.appendChild(s);
+    });
+  }
+  async function convertHeic(file) {
+    toast('Конвертируем HEIC…');
+    try {
+      if (!window.heic2any) {
+        try { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js'); }
+        catch (e) { await loadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js'); }
+      }
+      var b = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: 0.95 });
+      b = Array.isArray(b) ? b[0] : b;
+      loadFile(new File([b], (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }), true);
+    } catch (e) {
+      loadErr('Этот браузер не открывает HEIC (формат фото с iPhone), а конвертер не загрузился. Откройте сайт в Safari, либо на iPhone выберите Настройки → Камера → Форматы → «Наиболее совместимые», либо сохраните фото как JPG.');
+    }
+  }
+  function loadFile(file, converted) {
+    if (!file) return;
+    loadPlate.classList.remove('show');
+    var heic = isHeic(file);
+    if (!heic && !/^image\//.test(file.type)) { loadErr('Нужен файл изображения: JPG, PNG, WebP или HEIC'); return; }
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      if (state.srcUrl) URL.revokeObjectURL(state.srcUrl);
+      state.orig = img; state.srcUrl = url; state.crop = null;
+      state.baseName = (file.name || 'carousel').replace(/\.[^.]+$/, '') || 'carousel';
+      fileName.textContent = file.name;
+      applySource();
+      dropZone.classList.add('has-file');
+      clearResult();
+      updateSizePlate();
+      cut();
+    };
+    img.onerror = function () {
+      URL.revokeObjectURL(url);
+      if (heic && !converted) convertHeic(file);
+      else loadErr(heic ? 'Не удалось открыть HEIC. Сохраните фото как JPG и попробуйте снова' : 'Не удалось открыть изображение');
+    };
+    img.src = url;
+  }
+  function pickFile(files) {
+    if (!files || !files.length) return;
+    var f = Array.prototype.filter.call(files, function (x) { return /^image\//.test(x.type) || isHeic(x); })[0] || files[0];
+    loadFile(f);
+  }
+
+  fileInput.addEventListener('change', function () {
+    pickFile(fileInput.files);
+    fileInput.value = '';
+  });
+
+  /* ---------- Настройки ---------- */
+  function setCount(v) {
+    slideCount.value = clampCount(v);
+    onSettingsChange();
+    syncCropCount();
+  }
+  minusBtn.addEventListener('click', function () { setCount(clampCount(slideCount.value) - 1); });
+  plusBtn.addEventListener('click', function () { setCount(clampCount(slideCount.value) + 1); });
+  slideCount.addEventListener('change', function () { setCount(slideCount.value); });
+  slideCount.addEventListener('keydown', function (e) { if (e.key === 'Enter') slideCount.blur(); });
+
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () {
+      tabs.forEach(function (x) {
+        var on = x === t;
+        x.classList.toggle('active', on);
+        x.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      state.format = t.getAttribute('data-format');
+      fmtHint.textContent = state.format === 'image/png' ? 'Без потерь, файлы заметно тяжелее' : 'Максимальное качество';
+      onSettingsChange();
+    });
+  });
+
+  function onSettingsChange() {
+    updateSizePlate();
+    // Если результат уже есть, пересобираем его сразу
+    if (cropOpen) pendingCut = true;
+    else if (state.img) cut();
+  }
+
+  var PRESET_KEY = { '1080x1350': '4:5', '1080x1080': '1:1', '1080x1440': '3:4' };
+  var plateCrop = $('plateCrop');
+  function target() {
+    var m = /^(\d+)x(\d+)$/.exec(state.preset);
+    return m ? { w: +m[1], h: +m[2] } : null;
+  }
+  // Размер слайда на выходе. Фото только масштабируется: обрезает его сам пользователь в «Кадрировать»
+  function outDims(n) {
+    var t = target(), W = state.W, H = state.H;
+    if (!t) return { w: Math.round(W / n), h: H, fit: true };
+    var rr = n * t.w / t.h, fit = Math.abs(W / H - rr) / rr < 0.01;
+    return { w: t.w, h: fit ? t.h : Math.round(H * n * t.w / W), fit: fit };
+  }
+  function updateSizePlate() {
+    if (!state.img) { sizePlate.classList.remove('show'); return; }
+    var n = clampCount(slideCount.value), t = target(), o = outDims(n);
+    var r = o.w / o.h, name = ratioName(r), tips = [];
+    if (t && !o.fit) tips.push('Фото другой формы, поэтому оно только масштабируется, без обрезки. Чтобы вышло ровно ' + t.w + ' × ' + t.h + ', подрежьте фото сами.');
+    if (r < 0.79 || r > 1.92) tips.push('Instagram обрежет такой слайд до пропорций от 4:5 до 1.91:1.');
+    var srcW = state.W / n, need = t ? t.w : 1080;
+    if (srcW < need * 0.9) tips.push('Фото небольшое: на слайд приходится ~' + Math.round(srcW) + ' px по ширине. Чтобы в ленте было чётко, лучше брать фото шириной от ' + (n * need) + ' px.');
+    sizeText.textContent = 'Слайд на выходе: ' + o.w + ' × ' + o.h + ' px' + (name ? ' (' + name + ')' : '') + (tips.length ? '\n' + tips.join('\n') : '');
+    plateCrop.hidden = !(t && !o.fit);
+    plateCrop.textContent = 'Кадрировать под ' + (PRESET_KEY[state.preset] || '');
+    sizePlate.className = 'plate show info';
+    sizePlate.querySelector('use').setAttribute('href', '#i-info');
+  }
+  plateCrop.addEventListener('click', function () { openCrop(); setCpKey(PRESET_KEY[state.preset] || 'free'); });
+
+  /* ---------- Нарезка ---------- */
+  function clearResult() {
+    state.run++;
+    state.slices.forEach(function (s) { URL.revokeObjectURL(s.url); });
+    state.slices = [];
+    track.innerHTML = '';
+    result.classList.remove('show');
+  }
+
+  function toBlob(canvas, mime, q) {
+    return new Promise(function (res) { canvas.toBlob(res, mime, q); });
+  }
+
+  async function cut() {
+    if (!state.img) return;
+    var run = ++state.run;
+    var n = clampCount(slideCount.value), t = target();
+    var mime = state.format, ext = extFor(mime), q = mime === 'image/jpeg' ? 1 : undefined;
+    var src = state.img, SW = state.W, SH = state.H, master = null;
+    var fresh = [];
+
+    try {
+      if (t) {
+        // Только масштабируем, ничего не обрезаем. Потом режем по целым пикселям, чтобы стыки не расходились
+        SW = n * t.w; SH = outDims(n).h;
+        master = document.createElement('canvas'); master.width = SW; master.height = SH;
+        var mc = master.getContext('2d');
+        mc.imageSmoothingQuality = 'high';
+        if (mime === 'image/jpeg') { mc.fillStyle = '#ffffff'; mc.fillRect(0, 0, SW, SH); }
+        mc.drawImage(state.img, 0, 0, state.W, state.H, 0, 0, SW, SH);
+        src = master;
+      }
+      for (var i = 0; i < n; i++) {
+        var x0 = Math.round(i * SW / n), x1 = Math.round((i + 1) * SW / n), w = x1 - x0;
+        var c = document.createElement('canvas');
+        c.width = w; c.height = SH;
+        var ctx = c.getContext('2d');
+        if (mime === 'image/jpeg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, SH); }
+        ctx.drawImage(src, x0, 0, w, SH, 0, 0, w, SH);
+        var blob = await toBlob(c, mime, q);
+        c.width = c.height = 0;
+        if (run !== state.run) { fresh.forEach(function (s) { URL.revokeObjectURL(s.url); }); if (master) master.width = 0; return; }
+        if (!blob) throw new Error('canvas');
+        fresh.push({ name: 'slide_' + pad(i + 1) + '.' + ext, blob: blob, url: URL.createObjectURL(blob), w: w, h: SH });
+      }
+    } catch (err) {
+      fresh.forEach(function (s) { URL.revokeObjectURL(s.url); });
+      if (master) master.width = 0;
+      toast('Не удалось нарезать: изображение слишком большое. Выберите размер поменьше');
+      return;
+    }
+    if (master) master.width = 0;
+
+    state.slices.forEach(function (s) { URL.revokeObjectURL(s.url); });
+    state.slices = fresh;
+    renderStrip();
+    if (feedOpen) buildFeed();
+  }
+
+  function renderStrip() {
+    track.innerHTML = '';
+    state.slices.forEach(function (s, i) {
+      var tile = document.createElement('div');
+      tile.className = 'tile';
+
+      var img = document.createElement('img');
+      img.src = s.url; img.alt = 'Слайд ' + (i + 1); img.draggable = false;
+
+      var num = document.createElement('span');
+      num.className = 'tile-num'; num.textContent = i + 1;
+
+      var dl = document.createElement('button');
+      dl.type = 'button'; dl.className = 'tile-dl';
+      dl.setAttribute('aria-label', 'Скачать слайд ' + (i + 1));
+      dl.innerHTML = '<svg class="icon" width="15" height="15"><use href="#i-download"/></svg>';
+      dl.addEventListener('click', function (e) { e.stopPropagation(); download(s.blob, s.name); });
+
+      var cb = document.createElement('button');
+      cb.type = 'button'; cb.className = 'tile-copy';
+      cb.setAttribute('aria-label', 'Копировать слайд ' + (i + 1));
+      cb.innerHTML = '<svg class="icon" width="15" height="15"><use href="#i-copy"/></svg>';
+      cb.addEventListener('click', function (e) { e.stopPropagation(); copySlice(s); });
+
+      var ob = document.createElement('button');
+      ob.type = 'button'; ob.className = 'tile-open';
+      ob.setAttribute('aria-label', 'Посмотреть слайд ' + (i + 1));
+      ob.addEventListener('click', function () { openPreview(i); });
+
+      var cap = document.createElement('div');
+      cap.className = 'tile-cap'; cap.textContent = s.w + ' × ' + s.h;
+
+      var wrap = document.createElement('div');
+      wrap.style.position = 'relative';
+      wrap.appendChild(img); wrap.appendChild(ob); wrap.appendChild(num);
+      wrap.appendChild(dl); wrap.appendChild(cb);
+      tile.appendChild(wrap); tile.appendChild(cap);
+      track.appendChild(tile);
+    });
+
+    var n = state.slices.length;
+    badge.textContent = n + ' ' + plural(n, 'слайд', 'слайда', 'слайдов');
+
+    var firstShow = !result.classList.contains('show');
+    result.classList.add('show');
+    if (firstShow) {
+      result.classList.remove('enter'); void result.offsetWidth; result.classList.add('enter');
+      
+    }
+  }
+
+
+  /* ---------- ZIP ---------- */
+  zipBtn.addEventListener('click', async function () {
+    if (!state.slices.length) return;
+    if (typeof JSZip === 'undefined') { toast('Не загрузился модуль архивов. Скачайте слайды по одному'); return; }
+
+    zipBtn.disabled = true;
+    zipLabel.textContent = 'Создаём архив';
+    progress.classList.add('show'); progressBar.style.width = '0';
+    try {
+      var zip = new JSZip();
+      state.slices.forEach(function (s) { zip.file(s.name, s.blob); });
+      var content = await zip.generateAsync(
+        { type: 'blob', compression: 'STORE' },
+        function (m) { progressBar.style.width = m.percent.toFixed(0) + '%'; }
+      );
+      download(content, state.baseName + '_carousel.zip');
+      toast('Архив готов');
+    } catch (err) {
+      toast('Не удалось создать архив');
+    } finally {
+      zipBtn.disabled = false;
+      zipLabel.textContent = 'Скачать ZIP';
+      setTimeout(function () { progress.classList.remove('show'); progressBar.style.width = '0'; }, 400);
+    }
+  });
+
+  /* ---------- Сохранить в галерею (системное меню «Поделиться») ---------- */
+  try {
+    var probe = new File([''], 'a.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [probe] })) shareBtn.style.display = '';
+  } catch (e) {}
+
+  shareBtn.addEventListener('click', async function () {
+    if (!state.slices.length) return;
+    try {
+      var files = state.slices.map(function (s) { return new File([s.blob], s.name, { type: s.blob.type }); });
+      await navigator.share({ files: files });
+    } catch (err) {
+      if (err && err.name !== 'AbortError') toast('Не удалось открыть меню. Скачайте архив');
+    }
+  });
+
+  /* ---------- Источник (оригинал или кадр) ---------- */
+  var cropRow = $('cropRow'), cropBtn = $('cropBtn'), cropResetBtn = $('cropResetBtn');
+
+  function applySource() {
+    var o = state.orig, c = state.crop;
+    if (c) {
+      var cv = document.createElement('canvas');
+      cv.width = c.w; cv.height = c.h;
+      cv.getContext('2d').drawImage(o, c.x, c.y, c.w, c.h, 0, 0, c.w, c.h);
+      state.img = cv; state.W = c.w; state.H = c.h;
+    } else {
+      state.img = o; state.W = o.naturalWidth; state.H = o.naturalHeight;
+    }
+    // Маленькая миниатюра для карточки файла
+    var k = Math.min(1, 144 / Math.max(state.W, state.H));
+    var tc = document.createElement('canvas');
+    tc.width = Math.max(1, Math.round(state.W * k));
+    tc.height = Math.max(1, Math.round(state.H * k));
+    var tx = tc.getContext('2d');
+    tx.fillStyle = '#ffffff'; tx.fillRect(0, 0, tc.width, tc.height);
+    tx.drawImage(state.img, 0, 0, tc.width, tc.height);
+    thumb.src = tc.toDataURL('image/jpeg', 0.8);
+
+    fileDim.textContent = state.W + ' × ' + state.H + ' px' +
+      (c ? ' (кадр из ' + o.naturalWidth + ' × ' + o.naturalHeight + ')' : '');
+    cropRow.classList.add('show');
+    cropResetBtn.style.display = c ? '' : 'none';
+  }
+
+  function clampN(v, a, b) { return Math.min(b, Math.max(a, v)); }
+
+  /* ---------- Модальные окна ---------- */
+  var pvModal = $('pvModal'), pvImg = $('pvImg'), pvTitle = $('pvTitle'), pvMeta = $('pvMeta'),
+      pvPrev = $('pvPrev'), pvNext = $('pvNext'), pvStage = $('pvStage'), pvClose = $('pvClose'),
+      pvCopy = $('pvCopy'), pvDownload = $('pvDownload');
+  var cropModal = $('cropModal'), cropStage = $('cropStage'), cropImg = $('cropImg'),
+      cropHole = $('cropHole'), cropBox = $('cropBox'), cropInfo = $('cropInfo'), cropHint = $('cropHint'),
+      cropCountEl = $('cropCount'), cropMinus = $('cropMinus'), cropPlus = $('cropPlus'),
+      cropApply = $('cropApply'), cropResetAll = $('cropResetAll'), cropClose = $('cropClose');
+  var cropTabs = Array.prototype.slice.call(cropModal.querySelectorAll('[data-ratio]'));
+  var pvOpen = false, pvIndex = 0, cropOpen = false, pendingCut = false;
+
+  function showModal(m) { m.classList.add('open'); document.body.classList.add('modal-open'); }
+  function hideModal(m) {
+    m.classList.remove('open');
+    if (!document.querySelector('.modal-back.open')) document.body.classList.remove('modal-open');
+  }
+
+  /* ---------- Копирование в буфер ---------- */
+  var canCopy = !!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
+  if (canCopy) document.body.classList.add('can-copy'); else pvCopy.style.display = 'none';
+
+  // В буфер браузеры принимают надёжно только PNG
+  function getPng(s) {
+    if (s.png) return Promise.resolve(s.png);
+    if (s.blob.type === 'image/png') { s.png = s.blob; return Promise.resolve(s.png); }
+    return new Promise(function (res, rej) {
+      var im = new Image();
+      im.onload = function () {
+        var c = document.createElement('canvas');
+        c.width = im.naturalWidth; c.height = im.naturalHeight;
+        c.getContext('2d').drawImage(im, 0, 0);
+        c.toBlob(function (b) { if (b) { s.png = b; res(b); } else rej(new Error('png')); }, 'image/png');
+      };
+      im.onerror = rej;
+      im.src = s.url;
+    });
+  }
+
+  async function copySlice(s) {
+    if (!canCopy) { toast('Браузер не умеет копировать изображения'); return; }
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': getPng(s) })]);
+      toast('Изображение скопировано');
+    } catch (err) {
+      toast('Не удалось скопировать. Скачайте файл');
+    }
+  }
+
+  /* ---------- Предпросмотр слайда ---------- */
+  function formatSize(b) {
+    return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' КБ' : (b / 1048576).toFixed(1).replace('.', ',') + ' МБ';
+  }
+
+  function openPreview(i) {
+    pvIndex = i; pvOpen = true;
+    showModal(pvModal);
+    renderPreview();
+    pvClose.focus();
+  }
+  function closePreview() { pvOpen = false; hideModal(pvModal); }
+
+  function renderPreview() {
+    var s = state.slices[pvIndex];
+    if (!s) { closePreview(); return; }
+    pvImg.src = s.url; pvImg.alt = 'Слайд ' + (pvIndex + 1);
+    pvTitle.textContent = 'Слайд ' + (pvIndex + 1) + ' из ' + state.slices.length;
+    pvMeta.textContent = s.w + ' × ' + s.h + ' px · ' + (s.blob.type === 'image/png' ? 'PNG' : 'JPEG') + ' · ' + formatSize(s.blob.size);
+    pvPrev.disabled = pvIndex === 0;
+    pvNext.disabled = pvIndex === state.slices.length - 1;
+    if (canCopy) getPng(s).catch(function () {}); // готовим PNG заранее
+  }
+  function stepPreview(d) {
+    var n = pvIndex + d;
+    if (n < 0 || n >= state.slices.length) return;
+    pvIndex = n; renderPreview();
+  }
+
+  pvPrev.addEventListener('click', function () { stepPreview(-1); });
+  pvNext.addEventListener('click', function () { stepPreview(1); });
+  pvClose.addEventListener('click', closePreview);
+  pvCopy.addEventListener('click', function () { copySlice(state.slices[pvIndex]); });
+  pvDownload.addEventListener('click', function () { var s = state.slices[pvIndex]; if (s) download(s.blob, s.name); });
+
+  // Свайп на телефоне
+  var swipeX = null;
+  pvStage.addEventListener('touchstart', function (e) { swipeX = e.touches[0].clientX; }, { passive: true });
+  pvStage.addEventListener('touchend', function (e) {
+    if (swipeX === null) return;
+    var dx = e.changedTouches[0].clientX - swipeX; swipeX = null;
+    if (Math.abs(dx) > 50) stepPreview(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  // Закрытие по клику на подложку (только если и нажатие, и отпускание были на ней)
+  (function () {
+    var down = false;
+    pvModal.addEventListener('pointerdown', function (e) { down = e.target === pvModal; });
+    pvModal.addEventListener('click', function (e) { if (down && e.target === pvModal) closePreview(); down = false; });
+  })();
+
+  /* ---------- Кадрирование ---------- */
+  var cp = { box: null, key: 'free', scale: 1, fit: 1, zoom: 1, drag: null };
+  var RATIO_K = { '4:5': 0.8, '1:1': 1, '3:4': 0.75 };
+  var MIN_DISP = 40; // минимальный размер рамки на экране, px
+
+  function cpRatio() {
+    var k = RATIO_K[cp.key];
+    return k ? k * clampCount(slideCount.value) : 0;
+  }
+
+  // Самая большая рамка нужного формата, центр по возможности сохраняется
+  function fitRatio() {
+    var r = cpRatio(); if (!r) return;
+    var W = state.orig.naturalWidth, H = state.orig.naturalHeight, b = cp.box;
+    var w = Math.min(W, H * r), h = w / r;
+    var cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+    cp.box = { x: clampN(cx - w / 2, 0, W - w), y: clampN(cy - h / 2, 0, H - h), w: w, h: h };
+  }
+
+  function updateCpHint() {
+    var n = clampCount(slideCount.value);
+    cropHint.textContent = cp.key === 'free'
+      ? 'Тяните за углы и стороны. Пунктир показывает места разреза'
+      : 'Каждый из ' + n + ' слайдов получится ' + cp.key + '. Пунктир показывает места разреза';
+  }
+
+  function rebuildSplits(n) {
+    var old = cropBox.querySelectorAll('.crop-split');
+    for (var i = 0; i < old.length; i++) cropBox.removeChild(old[i]);
+    for (var j = 1; j < n; j++) {
+      var d = document.createElement('div');
+      d.className = 'crop-split';
+      d.style.left = (j / n * 100) + '%';
+      cropBox.appendChild(d);
+    }
+  }
+
+  function renderCp() {
+    var s = cp.scale, b = cp.box;
+    [cropHole, cropBox].forEach(function (el) {
+      el.style.left = (b.x * s) + 'px'; el.style.top = (b.y * s) + 'px';
+      el.style.width = (b.w * s) + 'px'; el.style.height = (b.h * s) + 'px';
+    });
+    cropBox.classList.toggle('locked', cp.key !== 'free');
+    var n = clampCount(slideCount.value);
+    if (cropBox.querySelectorAll('.crop-split').length !== n - 1) rebuildSplits(n);
+    var w = Math.round(b.w), h = Math.round(b.h);
+    cropInfo.textContent = 'Кадр ' + w + ' × ' + h + ' px, слайд около ' + Math.round(w / n) + ' × ' + h + ' px';
+    syncNums();
+  }
+
+  function layoutCp() {
+    var o = state.orig;
+    var cs = getComputedStyle(cropStage), pw = parseFloat(cs.paddingLeft) * 2 || 36, ph = parseFloat(cs.paddingTop) * 2 || 36;
+    var aw = Math.max(80, cropStage.clientWidth - pw), ah = Math.max(80, cropStage.clientHeight - ph);
+    cp.fit = Math.min(aw / o.naturalWidth, ah / o.naturalHeight);
+    cp.scale = cp.fit * cp.zoom;
+    cropImg.style.width = Math.round(o.naturalWidth * cp.scale) + 'px';
+    cropImg.style.height = Math.round(o.naturalHeight * cp.scale) + 'px';
+    renderCp();
+  }
+
+  function setCpKey(k) {
+    cp.key = k;
+    cropTabs.forEach(function (x) {
+      var on = x.getAttribute('data-ratio') === k;
+      x.classList.toggle('active', on);
+      x.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    fitRatio(); updateCpHint(); renderCp();
+  }
+
+  function syncCropCount() {
+    cropCountEl.textContent = clampCount(slideCount.value);
+    if (!cropOpen) return;
+    fitRatio(); updateCpHint(); renderCp();
+  }
+
+  function openCrop() {
+    if (!state.orig) return;
+    var o = state.orig, c = state.crop;
+    cp.box = c ? { x: c.x, y: c.y, w: c.w, h: c.h } : { x: 0, y: 0, w: o.naturalWidth, h: o.naturalHeight };
+    cp.key = 'free';
+    cropTabs.forEach(function (x) {
+      var on = x.getAttribute('data-ratio') === 'free';
+      x.classList.toggle('active', on); x.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    cropCountEl.textContent = clampCount(slideCount.value);
+    cropImg.src = state.srcUrl;
+    cp.zoom = 1; zoomLbl.textContent = '100%';
+    updateCpHint();
+    cropOpen = true;
+    showModal(cropModal);
+    $('numDet').open = window.innerWidth > 860;
+    layoutCp();
+    cropClose.focus();
+  }
+
+  function closeCrop() {
+    cropOpen = false;
+    hideModal(cropModal);
+    if (pendingCut && state.img) cut();
+    pendingCut = false;
+  }
+
+  function applyCrop() {
+    var o = state.orig, W = o.naturalWidth, H = o.naturalHeight, b = cp.box;
+    var x = clampN(Math.round(b.x), 0, W - 1), y = clampN(Math.round(b.y), 0, H - 1);
+    var w = clampN(Math.round(b.w), 1, W - x), h = clampN(Math.round(b.h), 1, H - y);
+    state.crop = (x === 0 && y === 0 && w >= W && h >= H) ? null : { x: x, y: y, w: w, h: h };
+    applySource();
+    updateSizePlate();
+    pendingCut = true;
+    closeCrop();
+    toast('Кадр применён');
+  }
+
+  function resetCpBox() {
+    var o = state.orig;
+    cp.box = { x: 0, y: 0, w: o.naturalWidth, h: o.naturalHeight };
+    setCpKey('free');
+  }
+
+  // Координаты указателя в пикселях оригинала
+  function cpPoint(e) {
+    var r = cropImg.getBoundingClientRect();
+    return { x: (e.clientX - r.left) / cp.scale, y: (e.clientY - r.top) / cp.scale };
+  }
+
+  function resizeBox(d, p) {
+    var W = state.orig.naturalWidth, H = state.orig.naturalHeight, s = d.start, m = d.mode;
+    var hasN = m.indexOf('n') >= 0, hasS = m.indexOf('s') >= 0, hasW = m.indexOf('w') >= 0, hasE = m.indexOf('e') >= 0;
+    var px = p.x - d.off.x, py = p.y - d.off.y;
+    var minN = Math.max(8, MIN_DISP / cp.scale);
+    var L = s.x, T = s.y, R = s.x + s.w, B = s.y + s.h;
+    var r = cpRatio();
+    if (r) {
+      // Формат зафиксирован: тянем угол, противоположный остаётся на месте
+      var ax = hasW ? R : L, ay = hasN ? B : T;
+      var maxW = Math.min(hasW ? ax : W - ax, (hasN ? ay : H - ay) * r);
+      var dx = hasW ? ax - px : px - ax;
+      var dy = hasN ? ay - py : py - ay;
+      var w2 = Math.max(dx, dy * r);
+      w2 = Math.max(Math.min(w2, maxW), Math.min(minN, maxW));
+      var h2 = w2 / r;
+      L = hasW ? ax - w2 : ax; R = L + w2;
+      T = hasN ? ay - h2 : ay; B = T + h2;
+    } else {
+      if (hasW) L = clampN(px, 0, R - minN);
+      if (hasE) R = clampN(px, L + minN, W);
+      if (hasN) T = clampN(py, 0, B - minN);
+      if (hasS) B = clampN(py, T + minN, H);
+    }
+    cp.box = { x: L, y: T, w: R - L, h: B - T };
+  }
+
+  cropBox.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault();
+    var hEl = e.target.closest ? e.target.closest('.crop-h') : null;
+    var mode = hEl ? hEl.getAttribute('data-h') : 'move';
+    var p = cpPoint(e), b = cp.box;
+    var d = { mode: mode, start: { x: b.x, y: b.y, w: b.w, h: b.h }, p0: p, off: { x: 0, y: 0 } };
+    if (mode !== 'move') {
+      // Запоминаем, где именно внутри маркера взялись, чтобы рамка не «прыгала»
+      var cx = mode.indexOf('w') >= 0 ? b.x : mode.indexOf('e') >= 0 ? b.x + b.w : null;
+      var cy = mode.indexOf('n') >= 0 ? b.y : mode.indexOf('s') >= 0 ? b.y + b.h : null;
+      d.off.x = cx === null ? 0 : p.x - cx;
+      d.off.y = cy === null ? 0 : p.y - cy;
+    }
+    cp.drag = d;
+    try { cropBox.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  cropBox.addEventListener('pointermove', function (e) {
+    var d = cp.drag; if (!d) return;
+    var p = cpPoint(e), s = d.start;
+    var W = state.orig.naturalWidth, H = state.orig.naturalHeight;
+    if (d.mode === 'move') {
+      cp.box = { x: clampN(s.x + p.x - d.p0.x, 0, W - s.w), y: clampN(s.y + p.y - d.p0.y, 0, H - s.h), w: s.w, h: s.h };
+    } else {
+      resizeBox(d, p);
+    }
+    renderCp();
+  });
+  function endDrag() { cp.drag = null; }
+  cropBox.addEventListener('pointerup', endDrag);
+  cropBox.addEventListener('pointercancel', endDrag);
+
+  cropTabs.forEach(function (t) {
+    t.addEventListener('click', function () { setCpKey(t.getAttribute('data-ratio')); });
+  });
+  cropMinus.addEventListener('click', function () { setCount(clampCount(slideCount.value) - 1); });
+  cropPlus.addEventListener('click', function () { setCount(clampCount(slideCount.value) + 1); });
+  cropApply.addEventListener('click', applyCrop);
+  $('cropApply2').addEventListener('click', applyCrop);
+  cropResetAll.addEventListener('click', resetCpBox);
+  cropClose.addEventListener('click', closeCrop);
+  cropBtn.addEventListener('click', openCrop);
+  cropResetBtn.addEventListener('click', function () {
+    state.crop = null;
+    applySource();
+    updateSizePlate();
+    cut();
+    toast('Кадр сброшен');
+  });
+  window.addEventListener('resize', function () { if (cropOpen) layoutCp(); });
+
+  /* ---------- Клавиатура ---------- */
+  document.addEventListener('keydown', function (e) {
+    if (cropOpen) {
+      if (e.key === 'Escape') closeCrop();
+      return;
+    }
+    if (!pvOpen) return;
+    if (e.key === 'Escape') closePreview();
+    else if (e.key === 'ArrowLeft') stepPreview(-1);
+    else if (e.key === 'ArrowRight') stepPreview(1);
+    else if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+      var sel = window.getSelection && String(window.getSelection());
+      if (!sel) { e.preventDefault(); copySlice(state.slices[pvIndex]); }
+    }
+  });
+
+  /* ---------- Зум, поворот, отражение, числа в кадрировании ---------- */
+  if (window.ResizeObserver) new ResizeObserver(function () { if (cropOpen) layoutCp(); }).observe(cropStage);
+  var zoomLbl = $('zoomLbl'), nX = $('nX'), nY = $('nY'), nW = $('nW'), nH = $('nH');
+
+  function setZoom(z, cx, cy) {
+    z = clampN(z, 1, 8);
+    if (z === cp.zoom) return;
+    var r = cropImg.getBoundingClientRect();
+    if (cx == null) { var sr = cropStage.getBoundingClientRect(); cx = sr.left + sr.width / 2; cy = sr.top + sr.height / 2; }
+    var ix = (cx - r.left) / cp.scale, iy = (cy - r.top) / cp.scale;
+    cp.zoom = z; layoutCp();
+    var r2 = cropImg.getBoundingClientRect();
+    cropStage.scrollLeft += r2.left + ix * cp.scale - cx;
+    cropStage.scrollTop += r2.top + iy * cp.scale - cy;
+    zoomLbl.textContent = Math.round(z * 100) + '%';
+  }
+  $('zoomIn').addEventListener('click', function () { setZoom(cp.zoom * 1.4); });
+  $('zoomOut').addEventListener('click', function () { setZoom(cp.zoom / 1.4); });
+  cropStage.addEventListener('wheel', function (e) {
+    if (!e.ctrlKey && !e.metaKey) return;      // обычная прокрутка остаётся прокруткой
+    e.preventDefault();
+    setZoom(cp.zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX, e.clientY);
+  }, { passive: false });
+
+  // Щипок двумя пальцами: зум и перемещение
+  var pinch = null;
+  function pinchInfo(e) {
+    var a = e.touches[0], b = e.touches[1];
+    return { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+  }
+  cropStage.addEventListener('touchstart', function (e) { if (e.touches.length === 2) { cp.drag = null; pinch = pinchInfo(e); } }, { passive: true });
+  cropStage.addEventListener('touchmove', function (e) {
+    if (e.touches.length !== 2 || !pinch) return;
+    e.preventDefault();
+    var c = pinchInfo(e);
+    setZoom(cp.zoom * c.d / pinch.d, c.x, c.y);
+    cropStage.scrollLeft -= c.x - pinch.x; cropStage.scrollTop -= c.y - pinch.y;
+    pinch = c;
+  }, { passive: false });
+  cropStage.addEventListener('touchend', function (e) { if (e.touches.length < 2) pinch = null; }, { passive: true });
+
+  async function transformOrig(kind) {
+    var o = state.orig, W = o.naturalWidth, H = o.naturalHeight, b = cp.box, nb;
+    var rot = kind === 'cw' || kind === 'ccw';
+    var c = document.createElement('canvas'); c.width = rot ? H : W; c.height = rot ? W : H;
+    var x = c.getContext('2d');
+    if (kind === 'cw')       { x.translate(H, 0); x.rotate(Math.PI / 2);  nb = { x: H - b.y - b.h, y: b.x, w: b.h, h: b.w }; }
+    else if (kind === 'ccw') { x.translate(0, W); x.rotate(-Math.PI / 2); nb = { x: b.y, y: W - b.x - b.w, w: b.h, h: b.w }; }
+    else if (kind === 'fh')  { x.translate(W, 0); x.scale(-1, 1);        nb = { x: W - b.x - b.w, y: b.y, w: b.w, h: b.h }; }
+    else                     { x.translate(0, H); x.scale(1, -1);        nb = { x: b.x, y: H - b.y - b.h, w: b.w, h: b.h }; }
+    x.drawImage(o, 0, 0);
+    c.naturalWidth = c.width; c.naturalHeight = c.height;
+    var blob = await toBlob(c, 'image/jpeg', 0.92);
+    if (!blob) { toast('Не удалось повернуть: фото слишком большое'); return; }
+    if (state.srcUrl) URL.revokeObjectURL(state.srcUrl);
+    state.srcUrl = URL.createObjectURL(blob);
+    state.orig = c; state.crop = null; cp.box = nb;
+    cropImg.src = state.srcUrl;
+    applySource(); updateSizePlate(); pendingCut = true;
+    if (cp.key !== 'free') fitRatio();
+    layoutCp();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tf]'), function (b) {
+    b.addEventListener('click', function () { transformOrig(b.getAttribute('data-tf')); });
+  });
+
+  function syncNums() {
+    var b = cp.box;
+    [[nX, b.x], [nY, b.y], [nW, b.w], [nH, b.h]].forEach(function (p) {
+      if (document.activeElement !== p[0]) p[0].value = Math.round(p[1]);
+    });
+    nH.disabled = !!cpRatio();
+  }
+  function numChange() {
+    var W = state.orig.naturalWidth, H = state.orig.naturalHeight, r = cpRatio(), b = cp.box;
+    var w = clampN(Math.round(+nW.value || b.w), 8, W);
+    var h = r ? w / r : clampN(Math.round(+nH.value || b.h), 8, H);
+    if (h > H) { h = H; if (r) w = h * r; }
+    cp.box = { x: clampN(+nX.value || 0, 0, W - w), y: clampN(+nY.value || 0, 0, H - h), w: w, h: h };
+    renderCp();
+  }
+  [nX, nY, nW, nH].forEach(function (el) {
+    el.addEventListener('change', numChange);
+    el.addEventListener('blur', syncNums);
+    el.addEventListener('keydown', function (e) { if (e.key === 'Enter') el.blur(); });
+  });
+
+  /* ---------- Размер на выходе ---------- */
+  var szHint = $('szHint');
+  var presetTabs = Array.prototype.slice.call(document.querySelectorAll('[data-preset]'));
+  presetTabs.forEach(function (t) {
+    t.addEventListener('click', function () {
+      presetTabs.forEach(function (x) { var on = x === t; x.classList.toggle('active', on); x.setAttribute('aria-checked', on ? 'true' : 'false'); });
+      state.preset = t.getAttribute('data-preset');
+      szHint.textContent = state.preset === 'orig' ? 'Без изменения размера, как в фото' : 'Фото только масштабируется, без обрезки. Подрезать его можно в «Кадрировать»';
+      onSettingsChange();
+    });
+  });
+
+  /* ---------- Загрузка: вся страница, буфер обмена ---------- */
+  var dragOv = $('dragOv'), dragDepth = 0;
+  function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; }
+  document.addEventListener('dragenter', function (e) { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; dragOv.classList.add('show'); });
+  document.addEventListener('dragover', function (e) { if (hasFiles(e)) e.preventDefault(); });
+  document.addEventListener('dragleave', function (e) { if (!hasFiles(e)) return; if (--dragDepth <= 0) { dragDepth = 0; dragOv.classList.remove('show'); } });
+  document.addEventListener('drop', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); dragDepth = 0; dragOv.classList.remove('show');
+    pickFile(e.dataTransfer.files);
+  });
+  document.addEventListener('paste', function (e) {
+    var fl = e.clipboardData && e.clipboardData.files;
+    if (fl && fl.length) { e.preventDefault(); pickFile(fl); toast('Изображение вставлено'); }
+  });
+
+  /* ---------- Как в ленте ---------- */
+  var feedModal = $('feedModal'), feedVp = $('feedVp'), feedTrack = $('feedTrack'), feedDots = $('feedDots'),
+      feedPeek = $('feedPeek'), feedNote = $('feedNote'), seamChips = $('seamChips'), fPrev = $('fPrev'), fNext = $('fNext');
+  var feedOpen = false;
+  var fd = { x: 0, max: 0, step: 1, vw: 1, n: 0, mode: 'auto', drag: null, wt: null };
+
+  // Instagram берёт пропорции первого слайда, но не уже 4:5 и не шире 1.91:1
+  function frameRatio() {
+    if (fd.mode !== 'auto') return +fd.mode;
+    var s = state.slices[0];
+    return s ? clampN(s.w / s.h, 0.8, 1.91) : 0.8;
+  }
+  function snapX(i) { return clampN(i * fd.step, 0, fd.max); }
+  function nearest(x) {
+    var b = 0, bd = 1e9;
+    for (var i = 0; i < fd.n; i++) { var d = Math.abs(snapX(i) - x); if (d < bd) { bd = d; b = i; } }
+    return b;
+  }
+  function setX(x, anim) {
+    fd.x = x;
+    feedTrack.style.transition = anim ? 'transform .32s cubic-bezier(.2,.8,.2,1)' : 'none';
+    feedTrack.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
+    var idx = nearest(clampN(x, 0, fd.max));
+    Array.prototype.forEach.call(feedDots.children, function (d, i) { d.classList.toggle('on', i === idx); });
+    fPrev.disabled = idx === 0; fNext.disabled = idx >= fd.n - 1;
+  }
+  function go(i) { setX(snapX(clampN(i, 0, fd.n - 1)), true); }
+  function seam(i) { setX(clampN(i * fd.step - fd.vw / 2, 0, fd.max), true); } // стык посередине рамки
+  function measure(keep) {
+    var p = keep && fd.step ? fd.x / fd.step : 0;
+    fd.vw = feedVp.clientWidth;
+    var s = feedTrack.firstChild;
+    fd.step = s ? s.offsetWidth : fd.vw;
+    fd.n = state.slices.length;
+    fd.max = Math.max(0, fd.n * fd.step - fd.vw);
+    setX(clampN(p * fd.step, 0, fd.max), false);
+  }
+  function applyFrame() {
+    var r = frameRatio();
+    var box = feedModal.querySelector('.feed-modal');
+    box.style.setProperty('--ar', r);
+    box.style.setProperty('--arn', r);
+    box.style.setProperty('--sw', feedPeek.getAttribute('aria-pressed') === 'true' ? '86%' : '100%');
+  }
+  function updateNote() {
+    var s = state.slices[0]; if (!s) return;
+    var fr = frameRatio(), sr = s.w / s.h, t;
+    if (sr > fr * 1.02) t = 'Рамка срежет слайд по бокам: видно ~' + Math.round(fr / sr * 100) + '% ширины.';
+    else if (sr < fr * 0.98) t = 'Рамка срежет слайд сверху и снизу: видно ~' + Math.round(sr / fr * 100) + '% высоты.';
+    else t = 'Слайд целиком помещается в рамку.';
+    if (sr > fr * 1.02 || sr < fr * 0.98) t += ' Подгоните кадр под рамку, чтобы ничего не терялось.';
+    feedNote.textContent = t;
+  }
+  function buildFeed() {
+    if (fd.n !== state.slices.length) fd.x = 0;
+    feedTrack.innerHTML = ''; feedDots.innerHTML = ''; seamChips.innerHTML = '';
+    state.slices.forEach(function (s, i) {
+      var d = document.createElement('div'); d.className = 'fslide';
+      var im = document.createElement('img'); im.src = s.url; im.alt = 'Слайд ' + (i + 1); im.draggable = false;
+      d.appendChild(im); feedTrack.appendChild(d);
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Слайд ' + (i + 1));
+      b.addEventListener('click', function () { go(i); });
+      feedDots.appendChild(b);
+    });
+    for (var k = 1; k < state.slices.length; k++) (function (k) {
+      var c = document.createElement('button'); c.type = 'button'; c.className = 'chip';
+      c.textContent = k + '–' + (k + 1); c.setAttribute('aria-label', 'Показать стык слайдов ' + k + ' и ' + (k + 1));
+      c.addEventListener('click', function () { seam(k); });
+      seamChips.appendChild(c);
+    })(k);
+    applyFrame(); measure(true); updateNote();
+  }
+
+  // Перетаскивание мышью и пальцем, щелчок после отпускания доводит до ближайшего слайда
+  feedVp.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    fd.drag = { id: e.pointerId, x0: e.clientX, s0: fd.x, last: e.clientX, t: e.timeStamp, v: 0 };
+    feedTrack.style.transition = 'none';
+    try { feedVp.setPointerCapture(e.pointerId); } catch (err) {}
+    feedVp.classList.add('grab');
+  });
+  feedVp.addEventListener('pointermove', function (e) {
+    var d = fd.drag; if (!d || e.pointerId !== d.id) return;
+    var dt = e.timeStamp - d.t;
+    if (dt > 0) d.v = (e.clientX - d.last) / dt;
+    d.last = e.clientX; d.t = e.timeStamp;
+    var x = d.s0 - (e.clientX - d.x0);
+    if (x < 0) x = x / 3; else if (x > fd.max) x = fd.max + (x - fd.max) / 3;
+    setX(x, false);
+  });
+  function endDrag() {
+    var d = fd.drag; if (!d) return;
+    fd.drag = null; feedVp.classList.remove('grab');
+    var f = clampN(fd.x, 0, fd.max) / fd.step, i;
+    if (Math.abs(d.v) > 0.35) i = d.v < 0 ? Math.ceil(f - 0.001) : Math.floor(f + 0.001);
+    else i = nearest(clampN(fd.x, 0, fd.max));
+    go(i);
+  }
+  feedVp.addEventListener('pointerup', endDrag);
+  feedVp.addEventListener('pointercancel', endDrag);
+  feedVp.addEventListener('wheel', function (e) {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    setX(clampN(fd.x + e.deltaX, 0, fd.max), false);
+    clearTimeout(fd.wt); fd.wt = setTimeout(function () { go(nearest(fd.x)); }, 140);
+  }, { passive: false });
+
+  fPrev.addEventListener('click', function () { go(nearest(clampN(fd.x, 0, fd.max)) - 1); });
+  fNext.addEventListener('click', function () { go(nearest(clampN(fd.x, 0, fd.max)) + 1); });
+
+  Array.prototype.forEach.call(feedModal.querySelectorAll('[data-far]'), function (t, _, all) {
+    t.addEventListener('click', function () {
+      Array.prototype.forEach.call(all, function (x) { var on = x === t; x.classList.toggle('active', on); x.setAttribute('aria-checked', on ? 'true' : 'false'); });
+      fd.mode = t.getAttribute('data-far');
+      applyFrame(); measure(true); updateNote();
+    });
+  });
+  feedPeek.addEventListener('click', function () {
+    feedPeek.setAttribute('aria-pressed', feedPeek.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    applyFrame(); measure(true);
+  });
+
+  function closeFeed() { feedOpen = false; hideModal(feedModal); }
+  $('feedBtn').addEventListener('click', function () {
+    if (!state.slices.length) return;
+    feedOpen = true; fd.x = 0; showModal(feedModal);
+    buildFeed();
+    $('feedClose').focus();
+  });
+  $('feedClose').addEventListener('click', closeFeed);
+  feedModal.addEventListener('click', function (e) { if (e.target === feedModal) closeFeed(); });
+  window.addEventListener('resize', function () { if (feedOpen) measure(true); });
+  document.addEventListener('keydown', function (e) {
+    if (!feedOpen) return;
+    if (e.key === 'Escape') closeFeed();
+    else if (e.key === 'ArrowRight') go(nearest(clampN(fd.x, 0, fd.max)) + 1);
+    else if (e.key === 'ArrowLeft') go(nearest(clampN(fd.x, 0, fd.max)) - 1);
+  });
+
+  updateSizePlate();
+})();
+</script>
+</body>
+</html>
